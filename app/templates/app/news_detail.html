@@ -1,0 +1,47 @@
+{% extends './base.html' %}
+
+{% block content %}
+
+    <!-- <div class="relative bg-white py-16 sm:py-24">
+    <div class="lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-2 lg:items-start lg:gap-24 lg:px-8">
+      <div class="relative sm:py-16 lg:py-0">
+        <div aria-hidden="true" class="hidden sm:block lg:absolute lg:inset-y-0 lg:right-0 lg:w-screen">
+          <svg class="absolute top-8 left-1/2 -ml-3 lg:-right-8 lg:left-auto lg:top-12" width="404" height="392" fill="none" viewBox="0 0 404 392">
+            <defs>
+              <pattern id="02f20b47-fd69-4224-a62a-4c9de5c763f7" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect x="0" y="0" width="4" height="4" class="text-gray-200" fill="currentColor"></rect>
+              </pattern>
+            </defs>
+            <rect width="404" height="392" fill="url(#02f20b47-fd69-4224-a62a-4c9de5c763f7)"></rect>
+          </svg>
+        </div>
+      </div> -->
+      <div class="bg-white py-24 sm:py-32">
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+            <div class="pt-12 sm:pt-16 lg:pt-20">
+                <p class="mt-6 text-sm text-gray-500">
+                    <time datetime="2020-03-16">{{ news.date_created }}</time>
+                  </p>
+                <h2 class="mt-5 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{{ news.title }}</h2>
+                <div class="mt-6 space-y-6 text-gray-500">
+                  <p class="text-base leading-7">{{ news.content }}</p>
+                </div>
+              </div>
+              <div class="sm:col-span-6">
+                <div class="mt-9 flex items-center">
+                  {% if user.is_superuser %}
+                  <img class="inline-block h-12 w-12 rounded-full" src="{{MEDIA_PREFIX}}{{media.default.url}}" alt="">
+                  {% endif %}
+                  <div class="ml-4 flex">
+                    <div>
+                      <p class="block text-sm font-medium text-blue-gray-900">{{ news.posted_by }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+
+ 
+{% endblock %}
