@@ -18,3 +18,6 @@ urlpatterns = [
     path('lesson_detail/<int:pk>', views.LessonDetailView.as_view(), name='lesson_detail'),
     path('create_section/', views.SectionCreateView.as_view(), name='create_section')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
