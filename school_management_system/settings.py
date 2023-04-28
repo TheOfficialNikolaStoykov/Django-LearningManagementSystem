@@ -172,3 +172,8 @@ EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
 CRONJOBS = [
 ('0 0 * * *', 'app.cron_jobs.create_data')
 ]
+
+
+
+# CSRF
+CSRF_TRUSTED_ORIGINS = ['https://*.uninow.online']
