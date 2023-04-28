@@ -10,6 +10,14 @@ def delete_all_videos():
     directory = './media/media'
     for file in os.listdir(directory):
         os.remove(os.path.join(directory, file))
+
+
+def delete_wystia_videos():
+        WistiaApi.configure('b6dfe0ed71db0bb540d99d98d0b5cff147ada8cf3fe184c45c81456e40a55841')
+        projects = WistiaApi.list_all_projects(SortBy.NAME)
+        project_ids = [p.hashed_id for p in projects]
+        for id in project_ids:
+            WistiaApi.delete_project(id)
  
 
 def delete_all_objects():
@@ -218,6 +226,7 @@ def assign_permissions():
 
 def create_data():
     delete_all_videos()
+    delete_wystia_videos()
     delete_all_objects()
     create_teacher_users()
     create_student_user()

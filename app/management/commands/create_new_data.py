@@ -10,6 +10,20 @@ from wystia.models import SortBy
 
 class Command(BaseCommand):
 
+    def delete_all_videos():
+        directory = './media/media'
+        for file in os.listdir(directory):
+            os.remove(os.path.join(directory, file))
+
+
+    def delete_wystia_videos(self):
+        WistiaApi.configure('b6dfe0ed71db0bb540d99d98d0b5cff147ada8cf3fe184c45c81456e40a55841')
+        projects = WistiaApi.list_all_projects(SortBy.NAME)
+        project_ids = [p.hashed_id for p in projects]
+        for id in project_ids:
+            WistiaApi.delete_project(id)
+
+
     def delete_all_objects(self):
         Student.objects.all().delete()
         Teacher.objects.all().delete()
@@ -146,7 +160,7 @@ class Command(BaseCommand):
 
 
     def upload_to_wistia(self):
-        WistiaApi.configure('30eb7ef0a3b74bb597549576ecc75ef393bc2b82d96ee14b528e8b1f1628627a')
+        WistiaApi.configure('b6dfe0ed71db0bb540d99d98d0b5cff147ada8cf3fe184c45c81456e40a55841')
         full_path = './media/Example_Video.mp4'
         courses_names = Course.objects.all().values('name')
         courses_names_list = [u['name'] for u in courses_names]
@@ -215,6 +229,8 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        self.delete_all_videos()
+        self.delete_wystia_videos()
         self.delete_all_objects()
         self.create_teacher_users()
         self.create_student_user()
