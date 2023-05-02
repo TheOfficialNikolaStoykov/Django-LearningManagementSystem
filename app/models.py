@@ -5,7 +5,6 @@ from PIL import Image
 from django.core.validators import FileExtensionValidator
 
 class Teacher(models.Model):
-    id = models.BigAutoField(primary_key=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     date_of_birth = models.DateField()
@@ -41,7 +40,6 @@ class Student(models.Model):
     ('PR', 'Professional'),
     ('PhD', 'Doctoral'),
 ]
-    id = models.BigAutoField(primary_key=True)
     degree = models.CharField(max_length=3, choices=DEGREE, default=BACHELOR)
     faculty_id = models.IntegerField()
     first_name = models.CharField(max_length=30)
