@@ -166,6 +166,8 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
             project_info = {'name': item.name, 'hashed_id': item.hashed_id}
             list_project_info.append(project_info)
 
+        print(list_project_info)
+
         course_pk = self.object.course.pk
         current_course = Course.objects.get(id=course_pk)
         current_course_name = current_course.name
