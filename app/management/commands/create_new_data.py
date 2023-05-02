@@ -161,7 +161,7 @@ class Command(BaseCommand):
 
     def upload_to_wistia(self):
         WistiaApi.configure(os.environ['WISTIA_API'])
-        full_path = './media/Example_Video.mp4'
+        full_path = '/var/media/media/Example_Video.mp4'
         courses_names = Course.objects.all().values('name')
         courses_names_list = [u['name'] for u in courses_names]
 
