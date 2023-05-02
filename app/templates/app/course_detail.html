@@ -8,27 +8,29 @@
       <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Lessons</p>
     </div>
         <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-          {% for lesson in lessons %}
           {% for section in sections %}
-            <div class="divide-y divide-gray-200 border-t">
-              <div x-data="{ open: false }">
-                <h3>
-                  <button type="button" x-description="Expand/collapse question button" class="group relative flex w-full items-center justify-between py-6 text-left" aria-controls="disclosure-1" @click="open = !open" aria-expanded="false" x-bind:aria-expanded="open.toString()">
-                    <span class="text-gray-900 text-sm font-medium" x-state:on="Open" x-state:off="Closed" :class="{ 'text-indigo-600': open, 'text-gray-900': !(open) }">{{ section.title }}</span>
-                    <span class="ml-6 flex items-center">
-                      <svg class="block h-6 w-6 text-gray-400 group-hover:text-gray-500" x-state:on="Open" x-state:off="Closed" :class="{ 'hidden': open, 'block': !(open) }" x-description="Heroicon name: outline/plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
-                      <svg class="hidden h-6 w-6 text-indigo-400 group-hover:text-indigo-500" x-state:on="Open" x-state:off="Closed" :class="{ 'block': open, 'hidden': !(open) }" x-description="Heroicon name: outline/minus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"></path></svg>
-                    </span>
-                  </button>
-                </h3>
-                  <div class="prose prose-sm pb-6" id="disclosure-1" x-show="open">
-                    <a href="/app/lesson_detail/{{lesson.id}}">{{ lesson.title }}</a>
+            {% for lesson in lessons %}
+              {% if section.title == lesson.title %}
+                <div class="divide-y divide-gray-200 border-t">
+                  <div x-data="{ open: false }">
+                    <h3>
+                      <button type="button" x-description="Expand/collapse question button" class="group relative flex w-full items-center justify-between py-6 text-left" aria-controls="disclosure-1" @click="open = !open" aria-expanded="false" x-bind:aria-expanded="open.toString()">
+                        <span class="text-gray-900 text-sm font-medium" x-state:on="Open" x-state:off="Closed" :class="{ 'text-indigo-600': open, 'text-gray-900': !(open) }">{{ section.title }}</span>
+                        <span class="ml-6 flex items-center">
+                          <svg class="block h-6 w-6 text-gray-400 group-hover:text-gray-500" x-state:on="Open" x-state:off="Closed" :class="{ 'hidden': open, 'block': !(open) }" x-description="Heroicon name: outline/plus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path></svg>
+                          <svg class="hidden h-6 w-6 text-indigo-400 group-hover:text-indigo-500" x-state:on="Open" x-state:off="Closed" :class="{ 'block': open, 'hidden': !(open) }" x-description="Heroicon name: outline/minus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15"></path></svg>
+                        </span>
+                      </button>
+                    </h3>
+                      <div class="prose prose-sm pb-6" id="disclosure-1" x-show="open">
+                        <a href="/app/lesson_detail/{{lesson.id}}">{{ lesson.title }}</a>
+                      </div>
+                      {% endif %}
+                    {% endfor %}
                   </div>
-                {% endfor %}
-              </div>
-            </div>
+                </div>
           {% endfor %}
         </div>
   </div>
