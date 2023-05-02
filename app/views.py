@@ -93,7 +93,7 @@ def lesson_create_view(request):
 
 
 def upload_to_wistia():
-    WistiaApi.configure('b6dfe0ed71db0bb540d99d98d0b5cff147ada8cf3fe184c45c81456e40a55841')
+    WistiaApi.configure(os.environ['WISTIA_API'])
     object = Lesson.objects.latest('id')
     path = object.file.path
     name = object.file.name
@@ -157,7 +157,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
     model = Lesson
 
     def get_media_url(self):
-        WistiaApi.configure('b6dfe0ed71db0bb540d99d98d0b5cff147ada8cf3fe184c45c81456e40a55841')
+        WistiaApi.configure(os.environ['WISTIA_API'])
         projects = WistiaApi.list_all_projects(SortBy.NAME)
 
         list_project_info = []

@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
 
     def delete_wystia_videos(self):
-        WistiaApi.configure('b6dfe0ed71db0bb540d99d98d0b5cff147ada8cf3fe184c45c81456e40a55841')
+        WistiaApi.configure(os.environ['WISTIA_API'])
         projects = WistiaApi.list_all_projects(SortBy.NAME)
         project_ids = [p.hashed_id for p in projects]
         for id in project_ids:
@@ -160,7 +160,7 @@ class Command(BaseCommand):
 
 
     def upload_to_wistia(self):
-        WistiaApi.configure('b6dfe0ed71db0bb540d99d98d0b5cff147ada8cf3fe184c45c81456e40a55841')
+        WistiaApi.configure(os.environ['WISTIA_API'])
         full_path = './media/Example_Video.mp4'
         courses_names = Course.objects.all().values('name')
         courses_names_list = [u['name'] for u in courses_names]
