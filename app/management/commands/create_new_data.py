@@ -120,7 +120,7 @@ class Command(BaseCommand):
     def file(self, item):
         lesson = item
         for num in range(1,11):
-            with open('/var/media/media', 'rb') as lesson_file:
+            with open('example', 'rb') as lesson_file:
                 lesson.file.save('Example_Video.mp4', File(lesson_file), save=True)
             lesson.save()
 
