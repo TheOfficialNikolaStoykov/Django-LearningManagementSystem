@@ -5,6 +5,7 @@ from PIL import Image
 from django.core.validators import FileExtensionValidator
 
 class Teacher(models.Model):
+    id = models.BigAutoField(primary_key=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     date_of_birth = models.DateField()
@@ -40,6 +41,7 @@ class Student(models.Model):
     ('PR', 'Professional'),
     ('PhD', 'Doctoral'),
 ]
+    id = models.BigAutoField(primary_key=True)
     degree = models.CharField(max_length=3, choices=DEGREE, default=BACHELOR)
     faculty_id = models.IntegerField()
     first_name = models.CharField(max_length=30)
@@ -65,6 +67,7 @@ class Student(models.Model):
 
 
 class Course(models.Model):
+    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100)
     students = models.ManyToManyField(User)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
@@ -74,6 +77,7 @@ class Course(models.Model):
 
 
 class Section(models.Model):
+    id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=200)
 
     def __str__(self):
@@ -81,6 +85,7 @@ class Section(models.Model):
 
 
 class Lesson(models.Model):
+    id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=300)
     description = models.TextField()
     file = models.FileField(upload_to='media', validators=[FileExtensionValidator( ['mp4'] ) ], null=True)
@@ -92,6 +97,7 @@ class Lesson(models.Model):
 
 
 class News(models.Model):
+    id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=300)
     content = models.TextField()
     date_created = models.DateField(auto_now_add=True)
