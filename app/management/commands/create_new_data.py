@@ -11,7 +11,7 @@ from wystia.models import SortBy
 class Command(BaseCommand):
 
     def delete_all_videos(self):
-        directory = 'var/media/media'
+        directory = 'var/media/media/media'
         for file in os.listdir(directory):
             os.remove(os.path.join(directory, file))
 
