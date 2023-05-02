@@ -8,8 +8,8 @@
       <p class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Lessons</p>
     </div>
         <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
+          {% for lesson in lessons %}
           {% for section in sections %}
-            {% for lesson in lessons %}
             <div class="divide-y divide-gray-200 border-t">
               <div x-data="{ open: false }">
                 <h3>
