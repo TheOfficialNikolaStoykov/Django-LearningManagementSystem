@@ -9,6 +9,7 @@
     </div>
         <div class="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
           {% for section in sections %}
+            {% for lesson in lessons %}
             <div class="divide-y divide-gray-200 border-t">
               <div x-data="{ open: false }">
                 <h3>
@@ -22,7 +23,6 @@
                     </span>
                   </button>
                 </h3>
-                {% for lesson in lessons %}
                   <div class="prose prose-sm pb-6" id="disclosure-1" x-show="open">
                     <a href="/app/lesson_detail/{{lesson.id}}">{{ lesson.title }}</a>
                   </div>
