@@ -57,7 +57,7 @@ def index_view(request):
     context = {'news_objects':news_objects}
 
     if request.user.groups.filter(name='Students').exists():
-        course_objects = Course.objects.filter(students=request.user)
+        course_objects = Course.objects.filter(students=request.user)[:4]
         # courses_paginator = Paginator(courses, 4)
         # page_number = request.GET.get('page')
         # course_objects = courses_paginator.get_page(page_number)
