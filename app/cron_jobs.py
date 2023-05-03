@@ -32,17 +32,15 @@ def delete_all_objects():
 
 
 def create_teacher_users():
-    teacher_users_list = [User(username='vvelichkov', password='vvelichkovlms123@@@$$$%%%'),
-                        User(username='itodorova', password='itodorovalms123@@@$$$%%%'),
-                        User(username='mevgeniev', password='mevgenievlms123@@@$$$%%%'),
-                        User(username='mstoyanova', password='mstoyanovalms123@@@$$$%%%'),
-                        User(username='lbalkanski', password='lbalkanskilms123@@@$$$%%%')]
-    User.objects.bulk_create(teacher_users_list)
+        User.objects.create_user(username='vvelichkov', password='vvelichkovlms123@@@$$$%%%')
+        User.objects.create_user(username='itodorova', password='itodorovalms123@@@$$$%%%')
+        User.objects.create_user(username='mevgeniev', password='mevgenievlms123@@@$$$%%%')
+        User.objects.create_user(username='mstoyanova', password='mstoyanovalms123@@@$$$%%%')
+        User.objects.create_user(username='lbalkanski', password='lbalkanskilms123@@@$$$%%%')
 
-
+    
 def create_student_user():
-    student_user_list = [User(username='svladov', password='svladovlms123@@@$$$%%%')]
-    User.objects.bulk_create(student_user_list)
+        User.objects.create_user(username='svladov', password='svladovlms123@@@$$$%%%')
 
 
 def create_teacher_accounts():
