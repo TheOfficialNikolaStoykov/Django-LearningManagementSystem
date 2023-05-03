@@ -11,15 +11,7 @@
         <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
             <dt class="text-sm font-medium text-gray-500">Profile Picture</dt>
             <dd class="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-              {% for group in request.user.groups.all %}
-                {% if group.name == 'Students' %}
-                  <img class="inline-block h-12 w-12 rounded-full" src="{{user.student.profile_picture.url}}" alt="">
-                {% elif group.name == 'Teachers'%}
-                  <img class="inline-block h-12 w-12 rounded-full" src="{{user.teacher.profile_picture.url}}" alt="">
-                {% else %}
-                  <img class="inline-block h-12 w-12 rounded-full" src="{{user.profile_picture.url}}" alt="">
-                {% endif %}
-              {% endfor %}
+                <img class="inline-block h-12 w-12 rounded-full" src="{{user.student.profile_picture.url}}" alt="">
               <span class="flex-grow"></span>
               <span class="ml-4 flex-shrink-0">
                 <button type="button" class="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Update</button>
@@ -49,7 +41,6 @@
             <dd class="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
               <span class="flex-grow">{{detail.address}}</span>
               <span class="ml-4 flex-shrink-0">
-                <button type="button" class="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Update</button>
               </span>
             </dd>
           </div>
@@ -58,7 +49,6 @@
             <dd class="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
               <span class="flex-grow">{{detail.email}}</span>
               <span class="ml-4 flex-shrink-0">
-                <button type="button" class="rounded-md bg-white font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Update</button>
               </span>
             </dd>
           </div>
