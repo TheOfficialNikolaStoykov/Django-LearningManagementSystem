@@ -58,7 +58,7 @@ def index_view(request):
 
     if request.user.groups.filter(name='Students').exists():
         courses = Course.objects.filter(students=request.user)
-        courses_paginator = Paginator(courses, 3)
+        courses_paginator = Paginator(courses, 4)
         page_number = request.GET.get('page')
         course_objects = courses_paginator.get_page(page_number)
 
