@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
 
     def delete_migrations(self):
-        directory = './../migrations'
+        directory = 'Django-LearningManagementSystem/app/migrations'
         for file in os.listdir(directory):
             if file != '__init__.py':
                 os.remove(os.path.join(directory, file))
