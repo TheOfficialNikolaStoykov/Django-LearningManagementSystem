@@ -15,7 +15,7 @@ def delete_database():
 
 
 def delete_migrations():
-    directory = './migrations'
+    directory = './migrations/'
     for file in os.listdir(directory):
         if file != '__init__.py':
             os.remove(os.path.join(directory, file))
