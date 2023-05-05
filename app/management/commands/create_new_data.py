@@ -13,12 +13,12 @@ from django.core.management.commands import loaddata
 class Command(BaseCommand):
 
     def delete_database(self):
-        path = "Django-LearningManagementSystem/db.sqlite3"
+        path = '../db.sqlite3'
         os.remove(path)
 
 
     def delete_migrations(self):
-        directory = './migrations'
+        directory = 'migrations'
         for file in os.listdir(directory):
             if file != '__init__.py':
                 os.remove(os.path.join(directory, file))
