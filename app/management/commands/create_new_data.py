@@ -6,9 +6,28 @@ from django.contrib.auth.models import User
 import os
 from django.core.files import File
 from wystia.models import SortBy
+from django.core import management
+from django.core.management.commands import loaddata
 
 
 class Command(BaseCommand):
+
+    def delete_database(self):
+        path = "Django-LearningManagementSystem/db.sqlite3"
+        os.remove(path)
+
+
+    def delete_migrations(self):
+        directory = './migrations'
+        for file in os.listdir(directory):
+            if file != '__init__.py':
+                os.remove(os.path.join(directory, file))
+
+
+    def create_database(self):
+        management.call_command('makemigrations')
+        management.call_command('migrate')
+
 
     def delete_all_videos(self):
         directory = '/var/media/media/media'
@@ -227,6 +246,9 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
+        self.delete_migrations()
+        self.delete_database()
+        self.create_database()
         self.delete_all_videos()
         self.delete_wystia_videos()
         self.delete_all_objects()

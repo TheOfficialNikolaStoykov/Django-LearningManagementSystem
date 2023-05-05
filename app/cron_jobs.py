@@ -5,6 +5,26 @@ from django.contrib.auth.models import User
 from django.core.files import File
 from wystia.models import SortBy
 import os
+from django.core import management
+from django.core.management.commands import loaddata
+
+
+def delete_database():
+    path = '../db.sqlite3'
+    os.remove(path)
+
+
+def delete_migrations():
+    directory = './migrations'
+    for file in os.listdir(directory):
+        if file != '__init__.py':
+            os.remove(os.path.join(directory, file))
+
+
+def create_database():
+    management.call_command('makemigrations')
+    management.call_command('migrate')
+
 
 def delete_all_videos():
     directory = './media/media'
@@ -223,6 +243,9 @@ def assign_permissions():
 
 
 def create_data():
+    delete_database()
+    delete_migrations()
+    create_database()
     delete_all_videos()
     delete_wystia_videos()
     delete_all_objects()
