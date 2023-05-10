@@ -13,8 +13,10 @@ from django.core.management.commands import loaddata
 class Command(BaseCommand):
 
     def delete_database(self):
-        path = '../db.sqlite3'
-        os.remove(path)
+        path = os.chdir("Django-LearningManagementSystem/db.sqlite3")
+        current_path = os.getcwd()
+        print(current_path)
+        
 
 
     def delete_migrations(self):
