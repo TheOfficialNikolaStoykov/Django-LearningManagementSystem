@@ -13,9 +13,12 @@ from django.core.management.commands import loaddata
 class Command(BaseCommand):
 
     def delete_database(self):
-        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        path = os.path.join(BASE_DIR, 'db.sqlite3')
-        os.remove(path)
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        project_directory = os.path.dirname(os.path.dirname(current_directory))
+        db_path = os.path.join(project_directory, 'db.sqlite3')
+
+        if os.path.exists(db_path):
+            os.remove(db_path)
         
 
     def delete_migrations(self):
