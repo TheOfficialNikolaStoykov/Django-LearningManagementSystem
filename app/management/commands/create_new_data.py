@@ -8,7 +8,7 @@ from django.core.files import File
 from wystia.models import SortBy
 from django.core import management
 from django.core.management.commands import loaddata
-import shutil
+
 
 class Command(BaseCommand):
 
