@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
 
     def delete_migrations(self):
-        path = os.path.join(os.path.dirname(__file__), '../../__init__.py')
+        path = './migrations'
         print(path)
         for file in os.listdir(path):
             if file != '__init__.py':
