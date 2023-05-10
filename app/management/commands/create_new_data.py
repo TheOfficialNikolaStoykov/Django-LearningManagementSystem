@@ -249,7 +249,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.delete_migrations()
-        self.delete_database()
+        # self.delete_database()
         self.create_database()
         self.delete_all_videos()
         self.delete_wystia_videos()
