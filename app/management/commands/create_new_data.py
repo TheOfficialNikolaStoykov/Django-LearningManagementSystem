@@ -12,10 +12,10 @@ from django.core.management.commands import loaddata
 
 class Command(BaseCommand):
 
-    # def delete_database(self):
-    #     path = os.chdir("Django-LearningManagementSystem/db.sqlite3")
-    #     current_path = os.getcwd()
-    #     print(current_path)
+    def delete_database(self):
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(BASE_DIR, 'db.sqlite3')
+        os.remove(path)
         
 
     def delete_migrations(self):
@@ -249,7 +249,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.delete_migrations()
-        # self.delete_database()
+        self.delete_database()
         self.create_database()
         self.delete_all_videos()
         self.delete_wystia_videos()
