@@ -19,7 +19,8 @@ class Command(BaseCommand):
 
     def delete_migrations(self):
         path = os.chdir("app/migrations/")
-        print(path)
+        current = os.getcwd()
+        print(current)
         for file in os.listdir(path):
             if file != '__init__.py':
                 os.remove(os.path.join(directory, file))
