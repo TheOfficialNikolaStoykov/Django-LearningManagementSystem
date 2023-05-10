@@ -19,11 +19,11 @@ class Command(BaseCommand):
         
 
     def delete_migrations(self):
-        path = os.chdir("app/migrations/")
         current_path = os.getcwd()
-        for file in os.listdir(current_path):
+        migrations_directory = os.path.join(current_path, 'app', 'migrations')
+        for file in os.listdir(migrations_directory):
             if file != '__init__.py':
-                os.remove(os.path.join(current_path, file))
+                os.remove(os.path.join(migrations_directory, file))
 
 
     def create_database(self):
