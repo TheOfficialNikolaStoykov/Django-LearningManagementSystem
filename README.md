@@ -1,1 +1,0 @@
-# Django---Learning-Management-System
