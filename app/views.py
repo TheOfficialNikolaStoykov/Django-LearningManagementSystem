@@ -31,34 +31,43 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
 @login_required
 def index_redirection_view(request):
-    news = News.objects.all()
-    news_paginator = Paginator(news, 5)
-    page_number = request.GET.get('page')
-    news_objects = news_paginator.get_page(page_number)
+    all_news = News.objects.all()
+    all_news_paginator = Paginator(all_news, 5)
+    page_number_news = request.GET.get('page')
+    all_news_objects = all_news_paginator.get_page(page_number_news)
+    
+    all_courses = Course.objects.all()
+    all_courses_paginator = Paginator(all_courses, 5)
+    page_number_courses = request.GET.get('page')
+    all_courses_objects = all_courses_paginator.get_page(page_number_courses)
 
-    context = {'news_objects':news_objects}
 
     if request.user.is_superuser or request.user.is_staff:
-        return render(request, 'app/index_admin.html')
+        
+        context = {'all_courses': all_courses_objects, 'all_news_objects': all_news_objects}
+        
+        return render(request, 'app/index_admin.html', context)
+
     elif request.user.is_teacher:
         courses = Course.objects.filter(teacher=request.user.id)
         courses_paginator = Paginator(courses, 5)
         page_number = request.GET.get('page')
         course_objects = courses_paginator.get_page(page_number)
 
-        context = {'course_objects':course_objects, 'news_objects':news_objects}
+        context = {'course_objects': course_objects, 'all_news_objects': all_news_objects}
 
         return render(request, 'app/index_teacher.html', context)
     elif request.user.is_student:
         course_objects = Course.objects.filter(students=request.user)[:4]
-        # courses_paginator = Paginator(courses, 4)
-        # page_number = request.GET.get('page')
-        # course_objects = courses_paginator.get_page(page_number)
+        courses_paginator = Paginator(courses, 4)
+        page_number = request.GET.get('page')
+        course_objects = courses_paginator.get_page(page_number)
 
-        context = {'course_objects':course_objects, 'news_objects':news_objects}
+        context = {'course_objects':course_objects, 'all_news_objects': all_news_objects}
+        
         return render(request, 'app/index_student.html', context)
     else:
-        return render(request, 'app/index_unauth_user.html')
+        return render(request, 'app/login.html')
 
 
 @login_required
@@ -79,35 +88,6 @@ def student_profile_view(request):
     
     return render(request, 'app/profile_student.html', context=context)
 
-
-# @login_required
-# def index_view(request):
-#     news = News.objects.all()
-#     news_paginator = Paginator(news, 5)
-#     page_number = request.GET.get('page')
-#     news_objects = news_paginator.get_page(page_number)
-
-#     context = {'news_objects':news_objects}
-
-#     if request.user.groups.filter(name='Students').exists():
-#         course_objects = Course.objects.filter(students=request.user)[:4]
-#         # courses_paginator = Paginator(courses, 4)
-#         # page_number = request.GET.get('page')
-#         # course_objects = courses_paginator.get_page(page_number)
-
-#         context = {'course_objects':course_objects, 'news_objects':news_objects}
-
-#     elif request.user.groups.filter(name='Teachers').exists():
-#         courses = Course.objects.filter(teacher=request.user.id)
-#         courses_paginator = Paginator(courses, 5)
-#         page_number = request.GET.get('page')
-#         course_objects = courses_paginator.get_page(page_number)
-
-#         context = {'course_objects':course_objects, 'news_objects':news_objects}
-
-#     return render(request, 'app/index.html', context=context)
-
-
 @login_required
 @permission_required('lesson.add_lesson')
 def lesson_create_view(request):
@@ -124,7 +104,6 @@ def lesson_create_view(request):
 
     return render(request, 'app/create_lesson.html', {'form': form})
 
-
 def upload_to_wistia():
     WistiaApi.configure(settings.WISTIA_API)
     object = Lesson.objects.latest('id')
@@ -134,17 +113,6 @@ def upload_to_wistia():
     request = WistiaUploadApi.upload_file(full_path)
 
     return print(request.created)
-
-
-class PasswordChangeView(LoginRequiredMixin, TemplateView):
-    template_name = 'registration/password_change_form.html'
-
-
-@login_required
-def password_change_view(request):
-
-    return render(request, 'templates/registration/password_change_form.html')
-
 
 class NewsDetailView(LoginRequiredMixin, DetailView):
     model = News
@@ -164,6 +132,11 @@ class CourseDetailView(LoginRequiredMixin, DetailView):
         context['sections'] = sections
 
         return context
+
+@login_required
+def password_change_view(request):
+
+    return render(request, 'templates/registration/password_change_form.html')
 
 
 @login_required

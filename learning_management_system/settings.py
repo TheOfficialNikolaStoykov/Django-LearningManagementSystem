@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -125,9 +126,7 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT =  os.path.join(BASE_DIR, 'static')
 
-MEDIA_ROOT = 'var/media/media'
-
-MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
@@ -179,3 +178,7 @@ CRONJOBS = [
 CSRF_TRUSTED_ORIGINS = ['https://*.uninow.online']
 
 ROOT_URLCONF = 'learning_management_system.urls'
+
+AUTH_USER_MODEL = 'app.CustomUser'
+
+LOGOUT_REDIRECT_URL = '/accounts/logged_out/'

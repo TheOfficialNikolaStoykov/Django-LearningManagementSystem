@@ -5,76 +5,88 @@
 <div class="bg-white">
     <div class="flex min-h-full flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Sign in to your account</h2>
+            <h2 class="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Sign in to your account</h2>
         </div>
     
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form class="space-y-6" method="POST" action="{% url 'login' %}">
-                {% csrf_token %}
-                {% for field in form %}
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700">{{ field.label_tag }}</label>
-                        <div class="mt-1">
-                        <input id="{{ field.auto_id }}" name="{{ field.html_name }}" type="text" required="" class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+            <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+                <form class="space-y-6" method="POST" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div>
+                            <label for="{{ field.auto_id }}" class="block text-sm font-medium text-gray-700">{{ field.label_tag }}</label>
+                            <div class="mt-1 relative">
+                                {% if field.name == 'password' %}
+                                    <input id="{{ field.auto_id }}" name="{{ field.html_name }}" type="password" required class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 pr-12 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                    
+                                    <!-- Eye Icon for Toggle -->
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" style="top: 50%; transform: translateY(-50%);" onclick="togglePasswordVisibility()">
+                                        <img id="eye-icon" src="{{ MEDIA_URL }}eye-regular.svg" alt="Show/Hide Password" class="h-5 w-5 text-gray-400">
+                                    </span>
+                                {% else %}
+                                    <input id="{{ field.auto_id }}" name="{{ field.html_name }}" type="text" required class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm">
+                            <a href="{% url 'password_reset' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
                         </div>
                     </div>
-                {% endfor %}
-
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                    </div>
-        
-                    <div class="text-sm">
-                    <a href="{% url 'password_reset' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
-                    </div>
-                </div>
     
-            <div>
-                <button type="submit" value="login" class="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Sign In</button>
-                <input type="hidden" name="next" value="{{next}}">
+                    <div>
+                        <button type="submit" class="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Sign In</button>
+                        <input type="hidden" name="next" value="{{next}}">
+                    </div>
+                </form>
             </div>
-            </form>
         </div>
-        </div>
+
         {% if form.errors %}
-        {% for error in form.errors %}
-        <div class="bg-white">
-            <div class="mx-auto max-w-7xl py-12 px-4 sm:px-6 lg:px-8">
-                <div class="mx-auto max-w-4xl">
-                    <div class="rounded-md bg-red-50 p-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-red-400" x-description="Heroicon name: mini/x-circle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-red-800">Attention needed</h3>
-                                <div class="mt-2 text-sm text-red-700">
-                                    <p>Your username or password was incorrect. Please try again.</p>
+            {% for error in form.errors %}
+                <div class="bg-white">
+                    <div class="mx-auto max-w-7xl py-12 px-4 sm:px-6 lg:px-8">
+                        <div class="mx-auto max-w-4xl">
+                            <div class="rounded-md bg-red-50 p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-red-800">Attention needed</h3>
+                                        <div class="mt-2 text-sm text-red-700">
+                                            <p>Your username or password was incorrect. Please try again.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            </div>
                         </div>
                     </div>
                 </div>
-          </div>
-        
-    
-        {% endfor %}
-    {% endif %}
-
-    <!-- {% if next %} user tried to visit a page -->
-    <!-- but either they weren't logged in -->
-    <!-- or they were logged in, but didn't have access -->
-     <!--   {% if user.is_authenticated %}
-        <p>You don't have permissions for this page.</p>
-    {% else %}
-        <p>Please login to view this page.</p>
+            {% endfor %}
         {% endif %}
-    {% endif %} -->
     </div>
-    </div>
+</div>
+
+<script>
+    function togglePasswordVisibility() {
+        const passwordField = document.querySelector('input[name="password"]');
+        const eyeIcon = document.getElementById('eye-icon');
+        
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            // Change to eye-slash icon
+            eyeIcon.src = "{{ MEDIA_URL }}eye-slash-regular.svg";
+        } else {
+            passwordField.type = "password";
+            // Change back to eye-open icon
+            eyeIcon.src = "{{ MEDIA_URL }}eye-regular.svg";
+        }
+    }
+</script>
 
 {% endblock content %}

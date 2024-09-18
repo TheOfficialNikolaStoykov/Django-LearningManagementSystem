@@ -79,7 +79,10 @@
                         {% endif %}
                     {% endfor %}
                   {% endif %}
-                  <a href="{% url 'logout' %}?next={{request.path}}" class="block px-4 py-2 text-sm text-gray-700" :class="{ 'bg-gray-100': activeIndex === 2 }" role="menuitem" tabindex="-1" id="user-menu-item-2" @mouseenter="onMouseEnter($event)" @mousemove="onMouseMove($event, 2)" @mouseleave="onMouseLeave($event)" @click="open = false; focusButton()">Log Out</a>
+                  <form method="POST" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="block px-4 py-2 text-sm text-gray-700">Log Out</button>
+                </form>
                 </div>
             </div>
           </div>
