@@ -1,0 +1,447 @@
+Metadata-Version: 2.1
+Name: wystia
+Version: 1.2.2
+Summary: A Python wrapper library for the Wistia API
+Home-page: https://github.com/rnag/wystia
+Author: Ritvik Nag
+Author-email: rv.kvetch@gmail.com
+License: MIT
+Keywords: wistia,api,wrapper,data api,upload api
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python
+Requires-Python: >=3.7
+Requires-Dist: requests
+Requires-Dist: requests-toolbelt
+Requires-Dist: urllib3
+Requires-Dist: dataclass-wizard (<1.0,>=0.21.0)
+Requires-Dist: cached-property (~=1.5.2) ; python_version == "3.7"
+
+==========================
+Wystia - Wistia API Helper
+==========================
+
+
+.. image:: https://img.shields.io/pypi/v/wystia.svg
+        :target: https://pypi.org/project/wystia/
+
+.. image:: https://img.shields.io/pypi/l/wystia.svg
+        :target: https://pypi.org/project/wystia/
+
+.. image:: https://img.shields.io/pypi/pyversions/wystia.svg
+        :target: https://pypi.org/project/wystia
+
+.. image:: https://github.com/rnag/wystia/actions/workflows/dev.yml/badge.svg
+        :target: https://github.com/rnag/wystia/actions/workflows/dev.yml
+
+.. image:: https://readthedocs.org/projects/wystia/badge/?version=latest
+        :target: https://wystia.readthedocs.io/en/latest/?version=latest
+        :alt: Documentation Status
+
+
+.. image:: https://pyup.io/repos/github/rnag/wystia/shield.svg
+     :target: https://pyup.io/repos/github/rnag/wystia/
+     :alt: Updates
+
+
+
+A Python wrapper library for the Wistia API
+
+
+* Free software: MIT license
+* Documentation: https://wystia.readthedocs.io.
+* Wistia Developer Docs: https://wistia.com/support/developers.
+
+Installation
+------------
+
+The Wystia library is available `on PyPI`_, and can be installed with ``pip``:
+
+.. code-block:: shell
+
+    $ pip install wystia
+
+You'll also need to create an access token as outlined `in the docs`_.
+
+Usage
+-----
+
+Sample usage with the `Data API <https://wistia.com/support/developers/data-api>`_:
+
+    Note: The following example makes use of ``WistiaApi``, which is an alias to
+    the class ``WistiaDataApi``.
+
+.. code-block:: python3
+
+    from wystia import WistiaApi
+    from wystia.models import SortBy, LanguageCode, Customizations, Private
+
+    # Setup the Wistia API token to use for requests. You can alternatively
+    # set this via the env variable 'WISTIA_API_TOKEN'.
+    WistiaApi.configure('MY-TOKEN')
+
+    # Retrieve a list of all projects in the Wistia account,
+    # sorted A-Z and in ascending order.
+    projects = WistiaApi.list_all_projects(SortBy.NAME)
+    project_ids = [p.hashed_id for p in projects]
+    # Print the project data as a prettified JSON string
+    print(projects.prettify())
+
+    # Retrieve a list of videos for a Wistia project.
+    # Note: If you don't require asset info (such as ADs) on each
+    #   video, I suggest calling `list_project` instead.
+    videos = WistiaApi.list_videos('project-id')
+
+    # Retrieve info on a particular video
+    vd = WistiaApi.get_video('video-id')
+    # If the video has captions, that won't be included in the `Medias#show`
+    # response by default, so we'll need a separate API call as below.
+    # vd.process_captions(
+    #     WistiaApi.list_captions(real_video_id))
+    print(vd)
+
+    # Update attributes on a media (video), or set a custom thumbnail on the video.
+    WistiaApi.update_video(
+        'video-id',
+        thumbnail_media_id='uploaded-thumbnail-id'
+    )
+
+    # Get aggregated stats for a video, such as view count
+    stats = WistiaApi.get_stats_for_video('video-id')
+
+    # Retrieve the customization data for a video
+    customizations = WistiaApi.get_customizations('video-id')
+
+    # Update only specific customizations for a video
+    # Note the embed options are documented here:
+    #   https://wistia.com/support/developers/embed-options
+    sample_embed_options = Customizations(
+        player_color='#e7fad1',
+        # Hide comments on the media page
+        private=Private(show_comments=False)
+    )
+    WistiaApi.update_customizations('video-id', sample_embed_options)
+
+    # Get the Spanish captions on a video
+    captions = WistiaApi.get_captions('video-id', LanguageCode.SPANISH)
+
+    # Add (or replace) the English captions on a video
+    WistiaApi.update_captions(
+        'video-id',
+        LanguageCode.ENGLISH,
+        srt_file='path/to/file.srt'
+    )
+
+
+... or to upload media via the `Upload API <https://wistia.com/support/developers/upload-api>`_:
+
+.. code-block:: python3
+
+    from wystia import WistiaUploadApi
+
+    # Upload a file to a (default) project on Wistia
+    r = WistiaUploadApi.upload_file('path/to/my-file.mp4')
+    # Check if the video was successfully uploaded
+    # assert r.created
+    # assert r.name == 'my-file.mp4'
+
+    # Uploads with a public link to a video, such as
+    # an S3 pre-signed url.
+    r = WistiaUploadApi.upload_link('my-s3-link',
+                                    title='My Video Name',
+                                    description='My Description')
+
+... you can alternatively retrieve asset info via the public Media Embed link:
+
+.. code-block:: python3
+
+    from wystia import WistiaEmbedApi
+
+    # Get the media embed data
+    embed_data = WistiaEmbedApi.get_data('video-id')
+
+    # Retrieve the source URL of the original media
+    source_url = WistiaEmbedApi.asset_url(media_data=embed_data)
+
+... when using the *Data API*, the ``WistiaHelper`` can help to further simplify some calls:
+
+.. code-block:: python3
+
+    from wystia import WistiaHelper
+
+    # Check if the video exists in your Wistia account
+    assert WistiaHelper.video_exists('abc1234567')
+
+    # Check if a video's name indicates the video is an archived copy of an
+    # existing video, as discussed in the below article on replacing a media:
+    #   https://wistia.com/learn/product-updates/improved-library-management-tools
+    assert WistiaHelper.is_archived_video(
+        'My Title [Archived on August 13, 2015]')
+
+    # Update the player color on a video
+    WistiaHelper.customize_video_on_wistia('video-id', 'ffffcc')
+
+    # Individually enable captions / AD in the player for a video
+    WistiaHelper.enable_ad('video-id')
+    WistiaHelper.enable_captions('video-id', on_by_default=False)
+
+    # Disable captions / AD in the player for a video
+    if WistiaHelper.has_captions_enabled('video-id'):
+        print('Disabling captions and AD for the video')
+        WistiaHelper.disable_captions_and_ad('video-id')
+
+Getting Started
+---------------
+
+Using the methods on the API classes assume your Wistia API token
+has previously been configured, for example via the environment. The API token will
+then be used globally by all the API classes when making requests to the Wistia API.
+
+You can set the following environment variable with your API token:
+
+* ``WISTIA_API_TOKEN``
+
+Another option is to use the global ``configure`` method as shown below:
+
+.. code-block:: python3
+
+    WistiaDataApi.configure('MY-API-TOKEN')
+
+There is additionally a `Quickstart`_ section in the docs which walks
+through - in more detail - how to get up and running with the
+Wystia library.
+
+Data API
+--------
+
+The wrapper class ``WistiaDataApi`` (aliased to ``WistiaApi``) interacts
+with the Wistia Data API (docs below):
+
+- https://wistia.com/support/developers/data-api
+
+
+It fully implements the following sections in the API documentation:
+
+    - Paging and Sorting Responses
+    - Projects
+    - Medias
+    - Customizations
+    - Captions
+
+The following sections in the API have *not* been implemented (mainly as I haven't used them before):
+
+    - Project Sharings
+    - Account
+
+
+Tips
+~~~~
+
+Containers
+==========
+
+In general, the API methods that begin with *list* - such as ``list_project`` -
+will return a `Container`_ object, which essentially acts as a thin wrapper
+around a collection of model classes. For all intents and purposes, this behaves
+exactly the same as a ``list`` object.
+
+One of the main benefits is that it implements a ``__str__`` method, which leverages
+the builtin ``pprint`` module in Python to pretty-print the Python object representation
+of each model or *dataclass* instance; this will format the output more nicely, for example
+whenever ``print(obj)`` is called on the `Container` result.
+
+The ``Container`` objects also implement the following convenience methods, which can
+be used to easily display the JSON string representation of the list of dataclass instances:
+
+    * ``to_json`` - Convert the list of instances to a JSON string.
+
+    * ``prettify`` - Convert the list of instances to a *prettified* JSON string.
+
+List Medias in a Project
+========================
+
+If you need to retrieve info on videos in a project and you
+don't need complete info such as a list of assets for the video,
+I recommend using ``list_project`` instead of ``list_videos``. This is because
+the `Projects#show <https://wistia.com/support/developers/data-api#projects_show>`_
+API returns up to 500 results per request, whereas the ``Medias#list``
+only returns the default 100 results per page.
+
+Assuming a project in your Wistia account has a total of about 250 media, here is the number of API
+calls you might expect from each individual approach:
+
+.. code-block:: python3
+
+    from wystia import WistiaDataApi
+
+    videos = WistiaDataApi.list_videos('project-id')
+    assert WistiaDataApi.request_count() == 3
+
+    # Resets request count for the next call
+    WistiaDataApi.reset_request_count()
+
+    videos = WistiaDataApi.list_project('project-id')
+    assert WistiaDataApi.request_count() == 1
+
+
+Thread Safety
+-------------
+
+The Wistia API classes are completely thread safe, since ``requests.Session``
+objects are not re-used between API calls.
+
+This means that if you have two (un-related) API operations to perform,
+such as updating a video's title and adding captions on the video,
+then you can certainly run those calls in parallel so that
+they complete a bit faster.
+
+
+Credits
+-------
+
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+
+.. _on PyPI: https://pypi.org/project/wystia/
+.. _in the docs: https://wistia.com/support/developers/data-api#creating-and-managing-access-tokens
+.. _Container: https://dataclass-wizard.readthedocs.io/en/latest/dataclass_wizard.html?highlight=container#dataclass_wizard.Container
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+.. _Quickstart: https://wystia.readthedocs.io/en/latest/quickstart.html
+
+
+=======
+History
+=======
+
+1.2.2 (2023-04-14)
+------------------
+
+**Features and Improvements**
+
+* Update ``keywords`` for the package.
+* Add `Python 3.11` to the list of supported versions.
+
+1.2.1 (2023-04-14)
+------------------
+
+**Bugfixes**
+
+* The ``Media`` class did not have the ``archived`` (``bool``) field, which
+  was resulting in errors when ``list_project()`` was called.
+
+  Therefore, moved over this field from ``Video`` to ``Media`` instead (which is the
+  super-class) so that this issue can be resolved.
+
+1.2.0 (2023-04-07)
+------------------
+
+**Features and Improvements**
+
+* Update model classes to support *new* populated fields, such as ``archived`` (a ``bool`` field), as otherwise it breaks de-serialization by default -- credits to `@KaneDM`_.
+* Upgrade dependencies in ``requirements-dev.txt``.
+
+**Bugfixes**
+
+* Update to replace plain ``dict`` annotation with ``dict[str, str]``, as previously it was resulting in errors when parsing the class annotations.
+
+.. _@KaneDM: https://github.com/KaneDM
+
+1.1.0 (2022-01-27)
+------------------
+
+**Features and Improvements**
+
+* Refactor any model classes that would be returned in *list* API
+  calls to subclass from ``JSONListWizard`` instead of ``JSONWizard``,
+  simply so that ``Container`` objects will be returned by default.
+
+* Refactor to import ``Container`` from the ``dataclass-wizard`` library
+  instead. For backwards compatibility reasons, the ``models`` module
+  still exports the *Container* namespace.
+
+1.0.0 (2022-01-14)
+------------------
+
+**Breaking Changes**
+
+* Wystia has officially dropped support for Python versions 3.5 and 3.6.
+  The support for 3.6 needed to be dropped primarily because of the
+  ``from __future__ import annotations`` usage in the code.
+* Refactored all API helper classes to return model class objects as a result,
+  rather than Python ``dict`` objects. In the case of any `list`- related API responses,
+  we now return a ``Container`` object so that it can be easier to print or display
+  the result for debugging purposes.
+* All inputs to the API helper methods that previously accepted a ``dict`` object,
+  have in general been refactored to accept a model dataclass instance as an input instead.
+* Renamed some error classes; for example, ``NoSuchMedia`` instead of ``NoSuchVideo``.
+* Renamed some model classes; for example, ``MediaStatus`` instead of ``VideoStatus``.
+
+**Features and Improvements**
+
+* Added ``WistiaApi`` to the list of public exports, which is aliased to the
+  ``WistiaDataApi`` helper class.
+* Added new methods to the ``WistiaDataApi`` class for more explicitly
+  interacting with *medias* instead of *videos*. For example, a ``list_medias``
+  method is added as an alternative to calling ``list_videos``.
+* Refactored the CI process to use GitHub Workflows instead of Travis CI.
+* Added *3.10* to the list of supported Python versions.
+* Updated the project status from *Beta* to *Production/Stable*.
+* Added an ``examples/`` folder in the project repo on GitHub, which
+  contains Python scripts to demonstrate sample usage.
+* Updated docs and added a new *Quickstart* section.
+
+0.3.0 (2021-07-21)
+------------------
+
+**Features and Improvements**
+
+* Add compatibility changes to extend support to Python 3.5 and 3.6
+* WistiaHelper: Add method ``project_details`` to retrieve info on a particular Wistia project
+* WistiaEmbedApi: Update to parse the ``.json`` response rather than the ``.jsonp`` version
+* Makefile: Add new command ``init``, which can be used to install Dev dependencies for the project
+
+  * Ensure the new command is compatible with Python 3.5, which has dependencies on separate
+    package versions; here we should use ``requirements-py35-dev.txt`` instead.
+* Makefile: Update ``coverage`` command to run unit tests by default
+
+**Bugfixes**
+
+* models.VideoData: The parameter to the ``process_captions`` method is now
+  correctly type-annotated to accept a ``List`` of ``Dict``
+
+0.2.1 (2021-06-17)
+------------------
+
+* WistiaHelper: Add method ``enable_captions_and_ad``
+* Remove ``.format`` usage in log statements
+* Remove an unnecessary method ``ad_needed`` from ``VideoData``
+* Update readme and Sphinx ``docs/``
+
+0.2.0 (2021-06-16)
+------------------
+
+* Fully implement all sections in the Wistia Data API
+* Add more methods to the ``WistiaHelper`` class
+* Request Count and API Token should now be globally shared by all API sub-classes
+* Lot of code refactoring
+* Exclude ``.mp4`` files from dist, to reduce total package size
+* Add more test cases
+* Update docs with better examples
+
+0.1.0 (2021-06-12)
+------------------
+
+* First release on PyPI.
+
+
