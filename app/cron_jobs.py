@@ -1,12 +1,13 @@
-from django.contrib.auth.models import Group, Permission
-from wystia import WistiaApi, WistiaUploadApi
-from app.models import Teacher, Student, Lesson, Course, News, Section
-from django.contrib.auth.models import User
-from django.core.files import File
-from wystia.models import SortBy
 import os
+
+from django.contrib.auth.models import Group, Permission, User
 from django.core import management
+from django.core.files import File
 from django.core.management.commands import loaddata
+from wystia import WistiaApi, WistiaUploadApi
+from wystia.models import SortBy
+
+from app.models import Course, Lesson, News, Section, Student, Teacher
 
 
 def delete_database():

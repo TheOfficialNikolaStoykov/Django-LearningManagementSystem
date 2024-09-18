@@ -1,17 +1,21 @@
-# Create your models here.
-from django.db import models
-from django.contrib.auth.models import User
-from PIL import Image
+from django.contrib.auth.models import AbstractBaseUser
 from django.core.validators import FileExtensionValidator
+from django.db import models
+from PIL import Image
+
+
+class User(AbstractBaseUser):
+    is_teacher = models.BooleanField(default=False)
+    is_student = models.BooleanField(default=False)
 
 class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     date_of_birth = models.DateField()
     address = models.CharField(max_length=100)
     email = models.EmailField()
     profile_picture = models.ImageField(default='default.jpg', upload_to='profile_pics')
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -39,7 +43,9 @@ class Student(models.Model):
     ('MA', 'Master'),
     ('PR', 'Professional'),
     ('PhD', 'Doctoral'),
-]
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     degree = models.CharField(max_length=3, choices=DEGREE, default=BACHELOR)
     faculty_id = models.IntegerField()
     first_name = models.CharField(max_length=30)
@@ -48,7 +54,6 @@ class Student(models.Model):
     address = models.CharField(max_length=100)
     email = models.EmailField()
     profile_picture = models.ImageField(default='default.jpg', upload_to='profile_pics')
-    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -65,25 +70,20 @@ class Student(models.Model):
 
 
 class Course(models.Model):
-    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100)
-    students = models.ManyToManyField(User)
+    students = models.ManyToManyField(Student)
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
 
-
 class Section(models.Model):
-    id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=200)
 
     def __str__(self):
         return self.title
 
-
 class Lesson(models.Model):
-    id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=300)
     description = models.TextField()
     file = models.FileField(upload_to='media', validators=[FileExtensionValidator( ['mp4'] ) ], null=True)
@@ -93,9 +93,7 @@ class Lesson(models.Model):
     def __str__(self):
         return self.title
 
-
 class News(models.Model):
-    id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=300)
     content = models.TextField()
     date_created = models.DateField(auto_now_add=True)

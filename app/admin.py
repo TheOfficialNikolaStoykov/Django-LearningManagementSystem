@@ -1,7 +1,10 @@
 import os
+
+from django.conf import settings
 from django.contrib import admin
-from .models import Teacher, Student, Course, News, Lesson, Section
 from wystia import WistiaApi, WistiaUploadApi
+
+from .models import *
 
 
 class LessonAdmin(admin.ModelAdmin):
@@ -12,7 +15,7 @@ class LessonAdmin(admin.ModelAdmin):
 
 
     def upload_video_to_wistia(self):
-        WistiaApi.configure('8e09fb0ac8fd7fa7da3493fe772cb966fbf252167e83260411d4cbf255e3db1e')
+        WistiaApi.configure(settings.WISTIA_API_KEY)
         object = Lesson.objects.latest('id')
         path = object.file.path
         name = object.file.name
@@ -28,7 +31,6 @@ class NewsAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-# Register your models here.
 admin.site.register(Teacher)
 admin.site.register(Student)
 admin.site.register(News, NewsAdmin)

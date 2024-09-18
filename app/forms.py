@@ -1,6 +1,7 @@
-from django.forms import ModelForm
-from .models import Lesson, Teacher, Student
 from django.contrib.auth.forms import SetPasswordForm
+from django.forms import ModelForm
+
+from .models import Lesson, Student, Teacher
 
 
 class LessonForm(ModelForm):

@@ -1,15 +1,19 @@
 import os
-from django.shortcuts import render
-from django.http import HttpResponseRedirect
-from .models import Course, News, Student, Teacher, Lesson, Section
-from django.views.generic import ListView, CreateView, DetailView, TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import (LoginRequiredMixin,
+                                        PermissionRequiredMixin)
+from django.core.paginator import Paginator
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
-from .forms import LessonForm
+from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from wystia import WistiaApi, WistiaUploadApi
 from wystia.models import SortBy
-from django.core.paginator import Paginator
+
+from .forms import LessonForm
+from .models import Course, Lesson, News, Section, Student, Teacher
+from django.conf import settings
 
 
 
@@ -26,10 +30,40 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
 
 @login_required
+def index_redirection_view(request):
+    news = News.objects.all()
+    news_paginator = Paginator(news, 5)
+    page_number = request.GET.get('page')
+    news_objects = news_paginator.get_page(page_number)
+
+    context = {'news_objects':news_objects}
+
+    if request.user.is_superuser or request.user.is_staff:
+        return render(request, 'app/index_admin.html')
+    elif request.user.is_teacher:
+        courses = Course.objects.filter(teacher=request.user.id)
+        courses_paginator = Paginator(courses, 5)
+        page_number = request.GET.get('page')
+        course_objects = courses_paginator.get_page(page_number)
+
+        context = {'course_objects':course_objects, 'news_objects':news_objects}
+
+        return render(request, 'app/index_teacher.html', context)
+    elif request.user.is_student:
+        course_objects = Course.objects.filter(students=request.user)[:4]
+        # courses_paginator = Paginator(courses, 4)
+        # page_number = request.GET.get('page')
+        # course_objects = courses_paginator.get_page(page_number)
+
+        context = {'course_objects':course_objects, 'news_objects':news_objects}
+        return render(request, 'app/index_student.html', context)
+    else:
+        return render(request, 'app/index_unauth_user.html')
+
+
+@login_required
 def admin_profile_view(request):
-
     return render(request, 'app/profile_admin.html')
-
 
 @login_required
 def teacher_profile_view(request):
@@ -37,7 +71,6 @@ def teacher_profile_view(request):
     context = {'details': details}
     
     return render(request, 'app/profile_teacher.html', context=context)
-
 
 @login_required
 def student_profile_view(request):
@@ -47,32 +80,32 @@ def student_profile_view(request):
     return render(request, 'app/profile_student.html', context=context)
 
 
-@login_required
-def index_view(request):
-    news = News.objects.all()
-    news_paginator = Paginator(news, 5)
-    page_number = request.GET.get('page')
-    news_objects = news_paginator.get_page(page_number)
+# @login_required
+# def index_view(request):
+#     news = News.objects.all()
+#     news_paginator = Paginator(news, 5)
+#     page_number = request.GET.get('page')
+#     news_objects = news_paginator.get_page(page_number)
 
-    context = {'news_objects':news_objects}
+#     context = {'news_objects':news_objects}
 
-    if request.user.groups.filter(name='Students').exists():
-        course_objects = Course.objects.filter(students=request.user)[:4]
-        # courses_paginator = Paginator(courses, 4)
-        # page_number = request.GET.get('page')
-        # course_objects = courses_paginator.get_page(page_number)
+#     if request.user.groups.filter(name='Students').exists():
+#         course_objects = Course.objects.filter(students=request.user)[:4]
+#         # courses_paginator = Paginator(courses, 4)
+#         # page_number = request.GET.get('page')
+#         # course_objects = courses_paginator.get_page(page_number)
 
-        context = {'course_objects':course_objects, 'news_objects':news_objects}
+#         context = {'course_objects':course_objects, 'news_objects':news_objects}
 
-    elif request.user.groups.filter(name='Teachers').exists():
-        courses = Course.objects.filter(teacher=request.user.id)
-        courses_paginator = Paginator(courses, 5)
-        page_number = request.GET.get('page')
-        course_objects = courses_paginator.get_page(page_number)
+#     elif request.user.groups.filter(name='Teachers').exists():
+#         courses = Course.objects.filter(teacher=request.user.id)
+#         courses_paginator = Paginator(courses, 5)
+#         page_number = request.GET.get('page')
+#         course_objects = courses_paginator.get_page(page_number)
 
-        context = {'course_objects':course_objects, 'news_objects':news_objects}
+#         context = {'course_objects':course_objects, 'news_objects':news_objects}
 
-    return render(request, 'app/index.html', context=context)
+#     return render(request, 'app/index.html', context=context)
 
 
 @login_required
@@ -93,7 +126,7 @@ def lesson_create_view(request):
 
 
 def upload_to_wistia():
-    WistiaApi.configure(os.environ['WISTIA_API'])
+    WistiaApi.configure(settings.WISTIA_API])
     object = Lesson.objects.latest('id')
     path = object.file.path
     name = object.file.name
