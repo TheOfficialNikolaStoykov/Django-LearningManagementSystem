@@ -177,3 +177,5 @@ CRONJOBS = [
 
 # CSRF
 CSRF_TRUSTED_ORIGINS = ['https://*.uninow.online']
+
+ROOT_URLCONF = 'learning_management_system.urls'

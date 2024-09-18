@@ -4,12 +4,15 @@ from django.db import models
 from PIL import Image
 
 
-class User(AbstractBaseUser):
+class CustomUser(AbstractBaseUser):
     is_teacher = models.BooleanField(default=False)
     is_student = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.username
+
 class Teacher(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     date_of_birth = models.DateField()
@@ -45,7 +48,7 @@ class Student(models.Model):
     ('PhD', 'Doctoral'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     degree = models.CharField(max_length=3, choices=DEGREE, default=BACHELOR)
     faculty_id = models.IntegerField()
     first_name = models.CharField(max_length=30)
@@ -79,6 +82,7 @@ class Course(models.Model):
 
 class Section(models.Model):
     title = models.CharField(max_length=200)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -97,7 +101,7 @@ class News(models.Model):
     title = models.CharField(max_length=300)
     content = models.TextField()
     date_created = models.DateField(auto_now_add=True)
-    posted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    posted_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.title

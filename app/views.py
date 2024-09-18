@@ -126,7 +126,7 @@ def lesson_create_view(request):
 
 
 def upload_to_wistia():
-    WistiaApi.configure(settings.WISTIA_API])
+    WistiaApi.configure(settings.WISTIA_API)
     object = Lesson.objects.latest('id')
     path = object.file.path
     name = object.file.name

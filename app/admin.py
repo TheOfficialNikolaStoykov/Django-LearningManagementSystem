@@ -2,6 +2,7 @@ import os
 
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from wystia import WistiaApi, WistiaUploadApi
 
 from .models import *
@@ -33,6 +34,7 @@ class NewsAdmin(admin.ModelAdmin):
 
 admin.site.register(Teacher)
 admin.site.register(Student)
+admin.site.register(CustomUser)
 admin.site.register(News, NewsAdmin)
 admin.site.register(Lesson, LessonAdmin)
 admin.site.register(Course)
