@@ -1,11 +1,11 @@
 import os
 
+from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from wystia import WistiaApi, WistiaUploadApi
 from django.contrib.auth.forms import UserCreationForm
-from django import forms
+from wystia import WistiaApi, WistiaUploadApi
 
 from .models import *
 

@@ -1,5 +1,7 @@
 import os
 
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import (LoginRequiredMixin,
                                         PermissionRequiredMixin)
@@ -13,8 +15,6 @@ from wystia.models import SortBy
 
 from .forms import LessonForm
 from .models import Course, Lesson, News, Section, Student, Teacher
-from django.conf import settings
-
 
 
 class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -28,47 +28,55 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
+def paginate_objects(request, queryset, items_per_page=5):
+    paginator = Paginator(queryset, items_per_page)
+    page_number = request.GET.get('page')
+    return paginator.get_page(page_number)
+
+def add_no_items_message(queryset, message):
+    if not queryset.exists():
+        return message
+    return None
+
+def get_courses_for_user(user):
+    if user.is_superuser or user.is_staff:
+        return Course.objects.all()
+    elif user.is_teacher:
+        return Course.objects.filter(teacher=user.id)
+    elif user.is_student:
+        student_instance = Student.objects.get(user=user)
+        return Course.objects.filter(students=student_instance)
+    return Course.objects.none()
+
+def get_all_news():
+    return News.objects.all()
 
 @login_required
 def index_redirection_view(request):
-    all_news = News.objects.all()
-    all_news_paginator = Paginator(all_news, 5)
-    page_number_news = request.GET.get('page')
-    all_news_objects = all_news_paginator.get_page(page_number_news)
-    
-    all_courses = Course.objects.all()
-    all_courses_paginator = Paginator(all_courses, 5)
-    page_number_courses = request.GET.get('page')
-    all_courses_objects = all_courses_paginator.get_page(page_number_courses)
+    all_news = get_all_news()
+    user_courses = get_courses_for_user(request.user)
 
+    paginated_news = paginate_objects(request, all_news)
+    paginated_courses = paginate_objects(request, user_courses)
+
+    course_message = add_no_items_message(user_courses, "No courses available at the moment.")
+    news_message = add_no_items_message(all_news, "No news available at the moment.")
+
+    context = {
+        'all_courses': paginated_courses,
+        'all_news': paginated_news,
+        'course_message': course_message,
+        'news_message': news_message,
+    }
 
     if request.user.is_superuser or request.user.is_staff:
-        
-        context = {'all_courses': all_courses_objects, 'all_news_objects': all_news_objects}
-        
         return render(request, 'app/index_admin.html', context)
-
     elif request.user.is_teacher:
-        courses = Course.objects.filter(teacher=request.user.id)
-        courses_paginator = Paginator(courses, 5)
-        page_number = request.GET.get('page')
-        course_objects = courses_paginator.get_page(page_number)
-
-        context = {'course_objects': course_objects, 'all_news_objects': all_news_objects}
-
-        return render(request, 'app/index_teacher.html', context)
+        return render(request, 'app/index_teacher.html', context) # We only need one page I think
     elif request.user.is_student:
-        course_objects = Course.objects.filter(students=request.user)[:4]
-        courses_paginator = Paginator(courses, 4)
-        page_number = request.GET.get('page')
-        course_objects = courses_paginator.get_page(page_number)
-
-        context = {'course_objects':course_objects, 'all_news_objects': all_news_objects}
-        
         return render(request, 'app/index_student.html', context)
     else:
         return render(request, 'app/login.html')
-
 
 @login_required
 def admin_profile_view(request):
