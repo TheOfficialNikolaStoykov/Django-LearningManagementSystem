@@ -34,10 +34,13 @@
                 </button>
               </h3>
               {% for lesson in lessons %}
+              {% if lesson.name == section.name %}
                 <div class="prose prose-sm pb-6" id="disclosure-1" x-show="open">
                   <a href="/app/lesson_detail/{{lesson.id}}">{{ lesson.title }}</a>
                 </div>
+                {% endif %}
               {% endfor %}
+              
             </div>
           </div>
         {% endfor %}
