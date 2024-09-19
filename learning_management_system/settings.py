@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "+gs8i(p%+bi-kr#@v6gi9x_w+_66+jumq=4#u3^n6p*r)zi#qv"
-WISTIA_API_KEY = '8e09fb0ac8fd7fa7da3493fe772cb966fbf252167e83260411d4cbf255e3db1e'
+WISTIA_API_KEY = '540e8e5878437192941351c6672f97af47d27530003d5b43bcf1f1a6e6a6c04e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

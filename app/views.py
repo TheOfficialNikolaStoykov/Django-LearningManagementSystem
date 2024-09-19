@@ -17,6 +17,52 @@ from .forms import LessonForm
 from .models import Course, Lesson, News, Section, Student, Teacher
 
 
+def add_no_items_message(queryset, message):
+    if not queryset.exists():
+        return message
+    return None
+
+@login_required
+def index_redirection_view(request):
+    news = News.objects.all()
+    courses = Course.objects.all()
+
+    courses_message = ""
+    news_message = ""
+
+    courses_message = add_no_items_message(courses, "No courses available at the moment.")
+    news_message = add_no_items_message(news, "No news available at the moment.")
+
+    context = {
+        'courses': courses,
+        'news': news,
+        'courses_message': courses_message,
+        'news_message': news_message,
+    }
+
+    if request.user.is_teacher:
+        teacher_instance = Teacher.objects.get(user=request.user)
+        teacher_courses = Course.objects.filter(teacher=teacher_instance)
+        courses_message = add_no_items_message(teacher_courses, "No courses available at the moment.")
+
+        context['courses'] = teacher_courses
+        context['courses_message'] = courses_message
+
+    elif request.user.is_student:
+        student_instance = Student.objects.get(user=request.user)
+        student_courses = Course.objects.filter(students=student_instance)
+        courses_message = add_no_items_message(student_courses, "No courses available at the moment.")
+
+        context['courses'] = student_courses
+        context['courses_message'] = courses_message
+    
+    elif request.user.is_staff or request.user.is_superuser:
+        return render(request, 'app/index.html', context)
+    else:
+        return render(request, 'app/login.html')
+        
+    return render(request, 'app/index.html', context)
+
 class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'news.add_news'
     model = News
@@ -27,56 +73,6 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         form.instance.posted_by = self.request.user
 
         return super().form_valid(form)
-
-def paginate_objects(request, queryset, items_per_page=5):
-    paginator = Paginator(queryset, items_per_page)
-    page_number = request.GET.get('page')
-    return paginator.get_page(page_number)
-
-def add_no_items_message(queryset, message):
-    if not queryset.exists():
-        return message
-    return None
-
-def get_courses_for_user(user):
-    if user.is_superuser or user.is_staff:
-        return Course.objects.all()
-    elif user.is_teacher:
-        return Course.objects.filter(teacher=user.id)
-    elif user.is_student:
-        student_instance = Student.objects.get(user=user)
-        return Course.objects.filter(students=student_instance)
-    return Course.objects.none()
-
-def get_all_news():
-    return News.objects.all()
-
-@login_required
-def index_redirection_view(request):
-    all_news = get_all_news()
-    user_courses = get_courses_for_user(request.user)
-
-    paginated_news = paginate_objects(request, all_news)
-    paginated_courses = paginate_objects(request, user_courses)
-
-    course_message = add_no_items_message(user_courses, "No courses available at the moment.")
-    news_message = add_no_items_message(all_news, "No news available at the moment.")
-
-    context = {
-        'all_courses': paginated_courses,
-        'all_news': paginated_news,
-        'course_message': course_message,
-        'news_message': news_message,
-    }
-
-    if request.user.is_superuser or request.user.is_staff:
-        return render(request, 'app/index_admin.html', context)
-    elif request.user.is_teacher:
-        return render(request, 'app/index_teacher.html', context) # We only need one page I think
-    elif request.user.is_student:
-        return render(request, 'app/index_student.html', context)
-    else:
-        return render(request, 'app/login.html')
 
 @login_required
 def admin_profile_view(request):
@@ -113,7 +109,7 @@ def lesson_create_view(request):
     return render(request, 'app/create_lesson.html', {'form': form})
 
 def upload_to_wistia():
-    WistiaApi.configure(settings.WISTIA_API)
+    WistiaApi.configure(settings.WISTIA_API_KEY)
     object = Lesson.objects.latest('id')
     path = object.file.path
     name = object.file.name
@@ -124,7 +120,6 @@ def upload_to_wistia():
 
 class NewsDetailView(LoginRequiredMixin, DetailView):
     model = News
-
 
 class CourseDetailView(LoginRequiredMixin, DetailView):
     model = Course
@@ -146,60 +141,68 @@ def password_change_view(request):
 
     return render(request, 'templates/registration/password_change_form.html')
 
-
 @login_required
 def courses_view(request):
-    if request.user.groups.filter(name='Teachers').exists():
+    if request.user.is_teacher:
         courses = Course.objects.filter(teacher=request.user.id)
+        courses_message = add_no_items_message(courses, "No courses available at the moment.")
 
-        context = {'courses':courses}
+        context = {'courses': courses,
+                   'courses_message': courses_message}
 
-    elif request.user.groups.filter(name='Students').exists():
-        courses = Course.objects.filter(students=request.user)
+    elif request.user.is_student:
+        student_instance = Student.objects.get(user=request.user)
+        courses = Course.objects.filter(students=student_instance)
+        courses_message = add_no_items_message(courses, "No courses available at the moment.")
 
-        context = {'courses':courses}
+        context = {'courses': courses,
+                   'courses_message': courses_message}
 
     elif request.user.is_superuser:
         courses = Course.objects.all()
+        courses_message = add_no_items_message(courses, "No courses available at the moment.")
 
-        context = {'courses':courses}
+        context = {'courses': courses,
+                   'courses_message': courses_message}
 
-    return render(request, 'app/courses.html', context=context)
-
+    return render(request, 'app/courses.html', context)
 
 class LessonDetailView(LoginRequiredMixin, DetailView):
     model = Lesson
+    WistiaApi.configure(settings.WISTIA_API_KEY)
 
     def get_media_url(self):
-        WistiaApi.configure(os.environ['WISTIA_API'])
-        projects = WistiaApi.list_all_projects(SortBy.NAME)
-
-        list_project_info = []
-
-        for item in projects:
-            project_info = {'name': item.name, 'hashed_id': item.hashed_id}
-            list_project_info.append(project_info)
-
 
         course_pk = self.object.course.pk
         current_course = Course.objects.get(id=course_pk)
-        current_course_name = current_course.name
-
-        lesson_pk = self.object.pk
-
-        print(lesson_pk)
         
-        for item in list_project_info:
-            if item['name'] == current_course_name:
-                hashed_id = item['hashed_id']
-                videos = WistiaApi.list_videos(hashed_id)
+        try:
+            projects = WistiaApi.list_all_projects()
+            matching_projects = [p for p in projects if p.name == current_course.name]
+            
+            if not matching_projects:
+                raise ValueError(f"No Wistia project found for course: {current_course.name}")
+            
+            project = matching_projects[0]
 
-        print(videos)
+            videos = WistiaApi.list_project(project.id)
 
-        video = videos[(lesson_pk - 1)].hashed_id
+            video_hashed_id = videos[0].hashed_id
 
-        return f'<script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script><div class="wistia_responsive_padding" style="padding:56.25% 0 28px 0;position:relative;"><div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;"><div class="wistia_embed wistia_async_{video} fullscreenButton=true playbackRateControl=true playbar=true settingsControl=true" style="height:100%;width:100%">&nbsp;</div></div></div>'
-
+            embed_code = f'''
+            <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 28px 0;position:relative;">
+                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+                    <div class="wistia_embed wistia_async_{video_hashed_id} fullscreenButton=true playbackRateControl=true playbar=true settingsControl=true" style="height:100%;width:100%"></div>
+                </div>
+            </div>
+            '''
+            
+            return embed_code
+        
+        except Exception as e:
+            print(f"Error retrieving Wistia video: {str(e)}")
+            return "Video not available"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -217,11 +220,8 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
 
         return context
 
-
 class SectionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'section.add_section'
     model = Section
     fields = "__all__"
     success_url = reverse_lazy('create_lesson')
-
-

@@ -96,6 +96,9 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+    
+    def get_index_in_course(self):
+        return list(self.course.lesson_set.order_by('id')).index(self)
 
 class News(models.Model):
     title = models.CharField(max_length=300)
