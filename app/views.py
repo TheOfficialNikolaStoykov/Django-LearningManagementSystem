@@ -1,21 +1,21 @@
 import os
 
 from django.conf import settings
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import (LoginRequiredMixin,
                                         PermissionRequiredMixin)
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView, TemplateView
+from django.views.generic import CreateView, DetailView
 from wystia import WistiaApi, WistiaUploadApi
-from wystia.models import SortBy
 
 from .forms import LessonForm
 from .models import Course, Lesson, News, Section, Student, Teacher
 
+WistiaApi.configure(settings.WISTIA_API_KEY)
 
 def add_no_items_message(queryset, message):
     if not queryset.exists():
@@ -24,7 +24,11 @@ def add_no_items_message(queryset, message):
 
 @login_required
 def index_redirection_view(request):
-    news = News.objects.all()
+    news = News.objects.order_by('date_created')
+    news_paginator = Paginator(news, 5)
+    page_number = request.GET.get("page")
+    page_obj = news_paginator.get_page(page_number)
+
     courses = Course.objects.all()
 
     courses_message = ""
@@ -35,7 +39,7 @@ def index_redirection_view(request):
 
     context = {
         'courses': courses,
-        'news': news,
+        "page_obj": page_obj,
         'courses_message': courses_message,
         'news_message': news_message,
     }
@@ -59,12 +63,12 @@ def index_redirection_view(request):
     elif request.user.is_staff or request.user.is_superuser:
         return render(request, 'app/index.html', context)
     else:
-        return render(request, 'app/login.html')
+        return render(request, 'registration/login.html')
         
     return render(request, 'app/index.html', context)
 
 class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    permission_required = 'news.add_news'
+    permission_required = 'app.add_news'
     model = News
     fields = ['title', 'content']
     success_url = reverse_lazy('index')
@@ -92,31 +96,66 @@ def student_profile_view(request):
     
     return render(request, 'app/profile_student.html', context=context)
 
-@login_required
-@permission_required('lesson.add_lesson')
-def lesson_create_view(request):
-    if request.method == 'POST':
-        form = LessonForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            upload_to_wistia()
-            return HttpResponseRedirect('/app/courses')
-        else:
-            print(form.errors)
-    else:
-        form = LessonForm()
+# @login_required
+# #@permission_required('lesson.add_lesson')
+# def lesson_create_view(request):
+#     if request.method == 'POST':
+#         form = LessonForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             form.save()
+#             upload_to_wistia()
+#             return HttpResponseRedirect('/app/courses')
+#         else:
+#             print(form.errors)
+#     else:
+#         form = LessonForm()
 
-    return render(request, 'app/create_lesson.html', {'form': form})
+#     return render(request, 'app/lesson_form.html', {'form': form})
 
-def upload_to_wistia():
-    WistiaApi.configure(settings.WISTIA_API_KEY)
-    object = Lesson.objects.latest('id')
-    path = object.file.path
-    name = object.file.name
-    full_path = os.path.join('media', name)
-    request = WistiaUploadApi.upload_file(full_path)
+class LessonCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    permission_required = 'app.add_lesson'
+    model = Lesson
+    form_class = LessonForm
+    success_url = reverse_lazy('app/lesson_form.html')
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        teacher_instance = Teacher.objects.get(user=self.request.user)
+        form.fields['course'].queryset = Course.objects.filter(teacher=teacher_instance)
+        
+        # form.fields['section'].queryset = Section.objects.filter(course) - FIX THIS
+        return form
 
-    return print(request.created)
+    def form_valid(self, form):
+        form.instance.posted_by = self.request.user
+        
+        response = super().form_valid(form)
+        
+        video_file = form.instance.file
+        upload_to_wistia(video_file)
+
+        return response
+
+def upload_to_wistia(video_file):
+    filename = video_file.file.name
+    video_file_path = os.path.join('media', filename)
+    
+    try:
+        response = WistiaUploadApi.upload_file(video_file_path)
+        return response
+    except Exception as e:
+        print(f"An error occurred while uploading the file to Wistia: {str(e)}")
+
+
+# def upload_to_wistia():
+#     WistiaApi.configure(settings.WISTIA_API_KEY)
+#     object = Lesson.objects.latest('id')
+#     path = object.file.path
+#     name = object.file.name
+#     full_path = os.path.join('media', name)
+#     request = WistiaUploadApi.upload_file(full_path)
+
+#     return print(request.created)
 
 class NewsDetailView(LoginRequiredMixin, DetailView):
     model = News
@@ -144,7 +183,8 @@ def password_change_view(request):
 @login_required
 def courses_view(request):
     if request.user.is_teacher:
-        courses = Course.objects.filter(teacher=request.user.id)
+        teacher_instance = Teacher.objects.get(user=request.user)
+        courses = Course.objects.filter(teacher=teacher_instance)
         courses_message = add_no_items_message(courses, "No courses available at the moment.")
 
         context = {'courses': courses,
@@ -158,7 +198,7 @@ def courses_view(request):
         context = {'courses': courses,
                    'courses_message': courses_message}
 
-    elif request.user.is_superuser:
+    elif request.user.is_superuser or request.user.is_admin:
         courses = Course.objects.all()
         courses_message = add_no_items_message(courses, "No courses available at the moment.")
 
@@ -188,15 +228,15 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
             videos = WistiaApi.list_project(project.id)
 
             video_hashed_id = videos[0].hashed_id
-
-            embed_code = f'''
-            <script charset="ISO-8859-1" src="//fast.wistia.com/assets/external/E-v1.js" async></script>
-            <div class="wistia_responsive_padding" style="padding:56.25% 0 28px 0;position:relative;">
-                <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-                    <div class="wistia_embed wistia_async_{video_hashed_id} fullscreenButton=true playbackRateControl=true playbar=true settingsControl=true" style="height:100%;width:100%"></div>
-                </div>
-            </div>
-            '''
+            
+            embed_code = f"""<script src="https://fast.wistia.com/embed/medias/{video_hashed_id}.jsonp" async></script>
+            <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+            <div class="wistia_responsive_padding" style="padding:56.25% 0 0 0;position:relative;">
+            <div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
+            <div class="wistia_embed wistia_async_{video_hashed_id} seo=true videoFoam=true" style="height:100%;position:relative;width:100%">
+            <div class="wistia_swatch" style="height:100%;left:0;opacity:0;overflow:hidden;position:absolute;top:0;transition:opacity 200ms;width:100%;">
+            <img src="https://fast.wistia.com/embed/medias/{video_hashed_id}/swatch" style="filter:blur(5px);height:100%;object-fit:contain;width:100%;" alt="" aria-hidden="true" onload="this.parentNode.style.opacity=1;" />
+            </div></div></div></div>"""
             
             return embed_code
         
@@ -221,7 +261,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         return context
 
 class SectionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    permission_required = 'section.add_section'
+    permission_required = 'app.add_section'
     model = Section
     fields = "__all__"
     success_url = reverse_lazy('create_lesson')

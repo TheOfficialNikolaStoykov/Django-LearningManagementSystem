@@ -16,7 +16,7 @@
               </div>
               <div class="sm:col-span-6">
                 <div class="mt-9 flex items-center">
-                  {% if user.is_superuser %}
+                  {% if user.is_superuser or user.is_staff %}
                     <img class="inline-block h-12 w-12 rounded-full" src="{% get_media_prefix %}profile_pics/default.jpg" alt="">
                   {% elif request.user.is_teacher %}
                     <img class="inline-block h-12 w-12 rounded-full" src="{{ user.teacher.profile_picture.url }}" alt="">
@@ -25,7 +25,15 @@
                   {% endif %}
                   <div class="ml-4 flex">
                     <div>
-                      <p class="block text-sm font-medium text-blue-gray-900">{{ news.posted_by.get_full_name|default:news.posted_by.username }}</p>
+                      <p class="block text-sm font-medium text-blue-gray-900">
+                        {% if news.posted_by.is_teacher %}
+                          {{ news.posted_by.teacher.first_name }} {{ news.posted_by.teacher.last_name }}
+                        {% elif news.posted_by.is_student %}
+                          {{ news.posted_by.student.first_name }} {{ news.posted_by.student.last_name }}
+                        {% else %}
+                          {{ news.posted_by.username }}  <!-- Fallback if the user is neither a teacher nor a student -->
+                        {% endif %}
+                      </p>
                     </div>
                   </div>
                 </div>

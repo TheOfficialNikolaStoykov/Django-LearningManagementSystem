@@ -1,0 +1,33 @@
+[run]
+branch = True
+source = .
+omit =
+    app/__init__.py
+    app/admin.py
+    app/apps.py
+    app/forms.py
+    app/migrations/*
+    app/tests.py
+    app/urls.py
+    learning_management_system/__init__.py
+    learning_management_system/settings.py
+    learning_management_system/urls.py
+    */apps.py
+    */migrations/*
+    */tests/*
+    manage.py
+    */settings.py
+    */urls.py
+    */wsgi.py
+    */asgi.py
+
+
+[report]
+fail_under = 90
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    def __str__
+    def __repr__
+    if __name__ == .__main__.:

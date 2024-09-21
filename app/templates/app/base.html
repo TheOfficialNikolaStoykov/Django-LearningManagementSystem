@@ -40,13 +40,11 @@
               <div class="flex">
                   <a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %} bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium {%else%}text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium {% endif %}" x-state:on="Current" x-state:off="Default" aria-current="page" x-state-description="Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white"">Dashboard</a>
                   <a href="{% url 'courses' %}" class="{% if request.resolver_match.url_name == 'courses' %} bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium {%else%}text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium {% endif %}" x-state-description="undefined: "bg-gray-900 text-white", undefined: "text-gray-300 hover:bg-gray-700 hover:text-white"">Courses</a>
-                  {% for group in request.user.groups.all %}
-                    {% if group.name == 'Teachers' %}
+                  {% if request.user.is_teacher %}
                       <a href="{% url 'post_news' %}" class="{% if request.resolver_match.url_name == 'post_news' %} bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium {%else%}text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium {% endif %}" x-state-description="undefined: "bg-gray-900 text-white", undefined: "text-gray-300 hover:bg-gray-700 hover:text-white"">Post News</a>
                       <a href="{% url 'create_lesson' %}" class="{% if request.resolver_match.url_name == 'create_lesson' %} bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium {%else%}text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium {% endif %}" x-state-description="undefined: "bg-gray-900 text-white", undefined: "text-gray-300 hover:bg-gray-700 hover:text-white"">Create Lesson</a>
                       <a href="{% url 'create_section' %}" class="{% if request.resolver_match.url_name == 'create_section' %} bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium {%else%}text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium {% endif %}" x-state-description="undefined: "bg-gray-900 text-white", undefined: "text-gray-300 hover:bg-gray-700 hover:text-white"">Create Section</a>
                     {% endif %}
-                  {% endfor %}
               </div>
             </div>
           </div>

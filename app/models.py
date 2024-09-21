@@ -13,8 +13,8 @@ class CustomUser(AbstractUser):
 
 class Teacher(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    first_name = models.CharField(max_length=30, blank=False, null=False)
+    last_name = models.CharField(max_length=30, blank=False, null=False)
     date_of_birth = models.DateField()
     address = models.CharField(max_length=100)
     email = models.EmailField()
@@ -23,8 +23,8 @@ class Teacher(models.Model):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
     
-    def save(self):
-        super().save()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
         image = Image.open(self.profile_picture.path)
 
@@ -51,8 +51,8 @@ class Student(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     degree = models.CharField(max_length=3, choices=DEGREE, default=BACHELOR)
     faculty_id = models.IntegerField()
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+    first_name = models.CharField(max_length=30, blank=False, null=False)
+    last_name = models.CharField(max_length=30, blank=False, null=False)
     date_of_birth = models.DateField()
     address = models.CharField(max_length=100)
     email = models.EmailField()
@@ -61,8 +61,8 @@ class Student(models.Model):
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
     
-    def save(self):
-        super().save()
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
         image = Image.open(self.profile_picture.path)
 

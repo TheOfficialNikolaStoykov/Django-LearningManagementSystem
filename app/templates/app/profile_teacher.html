@@ -11,15 +11,7 @@
         <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
             <dt class="text-sm font-medium text-gray-500">Profile Picture</dt>
             <dd class="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-              {% for group in request.user.groups.all %}
-                {% if group.name == 'Students' %}
-                  <img class="inline-block h-12 w-12 rounded-full" src="{{user.student.profile_picture.url}}" alt="">
-                {% elif group.name == 'Teachers'%}
-                  <img class="inline-block h-12 w-12 rounded-full" src="{{user.teacher.profile_picture.url}}" alt="">
-                {% else %}
-                  <img class="inline-block h-12 w-12 rounded-full" src="{{user.profile_picture.url}}" alt="">
-                {% endif %}
-              {% endfor %}
+                <img class="inline-block h-12 w-12 rounded-full" src="{{user.teacher.profile_picture.url}}" alt="">
             </dd>
           </div>
           <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
