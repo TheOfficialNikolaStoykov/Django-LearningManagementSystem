@@ -34,7 +34,7 @@
                 </div>
                 <div>
                     <label for="section" class="block text-sm font-medium text-gray-700">Section:</label>
-                    {{ form.section }}
+                    <select id="section" name="section" class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
@@ -80,5 +80,32 @@
     {% endif %}
     </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var courseSelect = document.getElementById('id_course');
+            var sectionSelect = document.getElementById('section');
+    
+            courseSelect.addEventListener('change', function () {
+                var courseId = this.value;
+
+                fetch(`/app/get-sections/${courseId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear the existing options
+                        sectionSelect.innerHTML = '';
+                        
+                        // Populate the section dropdown with the new data
+                        data.forEach(function (section) {
+                            var option = document.createElement('option');
+                            option.value = section.id;
+                            option.textContent = section.title;
+                            sectionSelect.appendChild(option);
+                        });
+                    });
+            });
+        });
+    </script>
 
 {% endblock content %}
+
+

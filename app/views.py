@@ -14,6 +14,8 @@ from wystia import WistiaApi, WistiaUploadApi
 
 from .forms import LessonForm
 from .models import Course, Lesson, News, Section, Student, Teacher
+from django.http import JsonResponse
+
 
 WistiaApi.configure(settings.WISTIA_API_KEY)
 
@@ -123,7 +125,8 @@ class LessonCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         teacher_instance = Teacher.objects.get(user=self.request.user)
         form.fields['course'].queryset = Course.objects.filter(teacher=teacher_instance)
         
-        # form.fields['section'].queryset = Section.objects.filter(course) - FIX THIS
+        form.fields['section'].queryset = Section.objects.none()
+        
         return form
 
     def form_valid(self, form):
@@ -135,6 +138,11 @@ class LessonCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         upload_to_wistia(video_file)
 
         return response
+
+def get_sections_by_course(request, course_id):
+    sections = Section.objects.filter(course_id=course_id)
+    section_list = [{'id': section.id, 'title': section.title} for section in sections]
+    return JsonResponse(section_list, safe=False)
 
 def upload_to_wistia(video_file):
     filename = video_file.file.name
@@ -265,3 +273,10 @@ class SectionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
     model = Section
     fields = "__all__"
     success_url = reverse_lazy('create_lesson')
+    
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        teacher_instance = Teacher.objects.get(user=self.request.user)
+        form.fields['course'].queryset = Course.objects.filter(teacher=teacher_instance)
+
+        return form

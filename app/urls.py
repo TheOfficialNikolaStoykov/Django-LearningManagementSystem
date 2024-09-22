@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile_teacher/', views.teacher_profile_view, name='profile_teacher'),
     path('profile_student/', views.student_profile_view, name='profile_student'),
     path('create_lesson/', views.LessonCreateView.as_view(), name='create_lesson'),
+    path('get-sections/<int:course_id>/', views.get_sections_by_course, name='get_sections_by_course'),
     path('courses/', views.courses_view, name='courses'),
     path('password_change/', views.password_change_view, name='password_change'),
     path('news_detail/<int:pk>/', views.NewsDetailView.as_view(), name='news_detail'),
