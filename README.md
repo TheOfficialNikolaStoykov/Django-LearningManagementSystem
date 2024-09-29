@@ -41,62 +41,62 @@ This project is a robust Learning Management System (LMS) built using Django. It
 
 1. Clone the repository:
 
-    \`\`\`bash
+    ```bash
     git clone https://github.com/your-username/django-lms.git
-    \`\`\`
+    ```
 
 2. Navigate to the project directory:
 
-    \`\`\`bash
+    ```bash
     cd django-lms
-    \`\`\`
+    ```
 
 3. Set up a virtual environment:
 
-    \`\`\`bash
+    ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows: venv\Scripts\activate
-    \`\`\`
+    ```
 
 4. Install the required dependencies:
 
-    \`\`\`bash
+    ```bash
     pip install -r requirements.txt
-    \`\`\`
+    ```
 
 5. Run migrations to set up the database schema:
 
-    \`\`\`bash
+    ```bash
     python manage.py migrate
-    \`\`\`
+    ```
 
 6. Create a superuser for accessing the Django admin:
 
-    \`\`\`bash
+    ```bash
     python manage.py createsuperuser
-    \`\`\`
+    ```
 
 7. Start the Django development server:
 
-    \`\`\`bash
+    ```bash
     python manage.py runserver
-    \`\`\`
+    ```
 
 
 ### Running Tests
 
 To run the test suite for the application:
 
-\`\`\`bash
+```bash
 python manage.py test
-\`\`\`
+```
 
 To run test coverage, use the following commands:
 
-\`\`\`bash
+```bash
 coverage run manage.py test
 coverage report
-\`\`\`
+```
 
 ## Technologies Used
 
