@@ -1,0 +1,5 @@
+coverage==7.6.1
+Django==5.0.1
+django-phonenumber-field==8.0.0
+pillow==10.2.0
+wystia==1.2.2
