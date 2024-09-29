@@ -7,6 +7,15 @@
           <div class="mx-auto max-w-4xl">
       <div class="mt-5 border-t border-gray-200">
         <dl class="divide-y divide-gray-200">
+          <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5"></div>
+            <dt class="text-sm font-medium text-gray-500">Profile Picture</dt>
+            <dd class="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                <img class="inline-block h-12 w-12 rounded-full" src="{{user.student.profile_picture.url}}" alt="">
+              <span class="flex-grow"></span>
+              <span class="ml-4 flex-shrink-0">
+              </span>
+            </dd>
+          </div>
           <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5">
             <dt class="text-sm font-medium text-gray-500">Username</dt>
             <dd class="mt-1 flex text-sm text-gray-900 sm:col-span-2 sm:mt-0">

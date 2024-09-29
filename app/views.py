@@ -1,12 +1,11 @@
 import os
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import (LoginRequiredMixin,
                                         PermissionRequiredMixin)
-from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
@@ -14,10 +13,9 @@ from wystia import WistiaApi, WistiaUploadApi
 
 from .forms import LessonForm
 from .models import Course, Lesson, News, Section, Student, Teacher
-from django.http import JsonResponse
-
 
 WistiaApi.configure(settings.WISTIA_API_KEY)
+
 
 def add_no_items_message(queryset, message):
     if not queryset.exists():
@@ -80,6 +78,9 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
+class NewsDetailView(LoginRequiredMixin, DetailView):
+    model = News
+
 @login_required
 def admin_profile_view(request):
     return render(request, 'app/profile_admin.html')
@@ -98,35 +99,35 @@ def student_profile_view(request):
     
     return render(request, 'app/profile_student.html', context=context)
 
-# @login_required
-# #@permission_required('lesson.add_lesson')
-# def lesson_create_view(request):
-#     if request.method == 'POST':
-#         form = LessonForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             upload_to_wistia()
-#             return HttpResponseRedirect('/app/courses')
-#         else:
-#             print(form.errors)
-#     else:
-#         form = LessonForm()
+@login_required
+def password_change_view(request):
 
-#     return render(request, 'app/lesson_form.html', {'form': form})
+    return render(request, 'templates/registration/password_change_form.html')
 
 class LessonCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'app.add_lesson'
     model = Lesson
     form_class = LessonForm
-    success_url = reverse_lazy('app/lesson_form.html')
+    success_url = reverse_lazy("create_lesson")
     
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         teacher_instance = Teacher.objects.get(user=self.request.user)
         form.fields['course'].queryset = Course.objects.filter(teacher=teacher_instance)
-        
-        form.fields['section'].queryset = Section.objects.none()
-        
+
+        if self.request.method == 'POST':
+            selected_course_id = self.request.POST.get('course')
+            if selected_course_id:
+                try:
+                    selected_course = Course.objects.get(id=selected_course_id)
+                    form.fields['section'].queryset = Section.objects.filter(course=selected_course)
+                except Course.DoesNotExist:
+                    form.fields['section'].queryset = Section.objects.none()
+            else:
+                form.fields['section'].queryset = Section.objects.none()
+        else:
+            form.fields['section'].queryset = Section.objects.none()
+
         return form
 
     def form_valid(self, form):
@@ -139,82 +140,6 @@ class LessonCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
         return response
 
-def get_sections_by_course(request, course_id):
-    sections = Section.objects.filter(course_id=course_id)
-    section_list = [{'id': section.id, 'title': section.title} for section in sections]
-    return JsonResponse(section_list, safe=False)
-
-def upload_to_wistia(video_file):
-    filename = video_file.file.name
-    video_file_path = os.path.join('media', filename)
-    
-    try:
-        response = WistiaUploadApi.upload_file(video_file_path)
-        return response
-    except Exception as e:
-        print(f"An error occurred while uploading the file to Wistia: {str(e)}")
-
-
-# def upload_to_wistia():
-#     WistiaApi.configure(settings.WISTIA_API_KEY)
-#     object = Lesson.objects.latest('id')
-#     path = object.file.path
-#     name = object.file.name
-#     full_path = os.path.join('media', name)
-#     request = WistiaUploadApi.upload_file(full_path)
-
-#     return print(request.created)
-
-class NewsDetailView(LoginRequiredMixin, DetailView):
-    model = News
-
-class CourseDetailView(LoginRequiredMixin, DetailView):
-    model = Course
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        pk = self.object.pk
-        current_course = Course.objects.get(id=pk)
-        lessons = Lesson.objects.filter(course=current_course)
-        sections = Section.objects.filter(lesson__in=lessons)
-        
-        context['lessons'] = lessons
-        context['sections'] = sections
-
-        return context
-
-@login_required
-def password_change_view(request):
-
-    return render(request, 'templates/registration/password_change_form.html')
-
-@login_required
-def courses_view(request):
-    if request.user.is_teacher:
-        teacher_instance = Teacher.objects.get(user=request.user)
-        courses = Course.objects.filter(teacher=teacher_instance)
-        courses_message = add_no_items_message(courses, "No courses available at the moment.")
-
-        context = {'courses': courses,
-                   'courses_message': courses_message}
-
-    elif request.user.is_student:
-        student_instance = Student.objects.get(user=request.user)
-        courses = Course.objects.filter(students=student_instance)
-        courses_message = add_no_items_message(courses, "No courses available at the moment.")
-
-        context = {'courses': courses,
-                   'courses_message': courses_message}
-
-    elif request.user.is_superuser or request.user.is_admin:
-        courses = Course.objects.all()
-        courses_message = add_no_items_message(courses, "No courses available at the moment.")
-
-        context = {'courses': courses,
-                   'courses_message': courses_message}
-
-    return render(request, 'app/courses.html', context)
-
 class LessonDetailView(LoginRequiredMixin, DetailView):
     model = Lesson
     WistiaApi.configure(settings.WISTIA_API_KEY)
@@ -226,6 +151,7 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         
         try:
             projects = WistiaApi.list_all_projects()
+        
             matching_projects = [p for p in projects if p.name == current_course.name]
             
             if not matching_projects:
@@ -248,9 +174,10 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
             
             return embed_code
         
+        except ValueError:
+            raise
         except Exception as e:
-            print(f"Error retrieving Wistia video: {str(e)}")
-            return "Video not available"
+            return f"Error during listing project/s: {e}"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -263,6 +190,64 @@ class LessonDetailView(LoginRequiredMixin, DetailView):
         embed_url = self.get_media_url()
 
         context['embed_url'] = embed_url
+        context['lessons'] = lessons
+        context['sections'] = sections
+
+        return context
+
+def get_sections_by_course(request, course_id):
+    sections = Section.objects.filter(course_id=course_id)
+    section_list = [{'id': section.id, 'title': section.title} for section in sections]
+    return JsonResponse(section_list, safe=False)
+
+def upload_to_wistia(video_file):
+    filename = video_file.file.name
+    video_file_path = os.path.join('media', filename)
+    
+    try:
+        response = WistiaUploadApi.upload_file(video_file_path)
+        return response
+    except Exception as e:
+        print(f"An error occurred while uploading the file to Wistia: {str(e)}")
+        raise
+
+@login_required
+def courses_view(request):
+    if request.user.is_teacher:
+        teacher_instance = Teacher.objects.get(user=request.user)
+        courses = Course.objects.filter(teacher=teacher_instance)
+        courses_message = add_no_items_message(courses, "No courses available at the moment.")
+
+        context = {'courses': courses,
+                   'courses_message': courses_message}
+
+    elif request.user.is_student:
+        student_instance = Student.objects.get(user=request.user)
+        courses = Course.objects.filter(students=student_instance)
+        courses_message = add_no_items_message(courses, "No courses available at the moment.")
+
+        context = {'courses': courses,
+                   'courses_message': courses_message}
+
+    elif request.user.is_staff or request.user.is_superuser:
+        courses = Course.objects.all()
+        courses_message = add_no_items_message(courses, "No courses available at the moment.")
+
+        context = {'courses': courses,
+                   'courses_message': courses_message}
+
+    return render(request, 'app/courses.html', context)
+
+class CourseDetailView(LoginRequiredMixin, DetailView):
+    model = Course
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pk = self.object.pk
+        current_course = Course.objects.get(id=pk)
+        lessons = Lesson.objects.filter(course=current_course)
+        sections = Section.objects.filter(lesson__in=lessons)
+        
         context['lessons'] = lessons
         context['sections'] = sections
 
